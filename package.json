@@ -1,0 +1,26 @@
+{
+  "name": "tenant-shield",
+  "version": "1.0.0",
+  "description": "TenantShield - The AI Lease Defender & Deposit Clawback Engine",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm --workspace=backend run dev",
+    "dev:frontend": "npm --workspace=frontend run dev",
+    "build:backend": "npm --workspace=backend run build",
+    "build:frontend": "npm --workspace=frontend run build",
+    "build": "npm run build:backend && npm run build:frontend"
+  },
+  "keywords": [
+    "lease-analyzer",
+    "ai",
+    "legaltech",
+    "tenant-rights",
+    "gemini"
+  ],
+  "author": "TenantShield Team",
+  "license": "MIT"
+}

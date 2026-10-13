@@ -2,11 +2,25 @@ import React, { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { HealthStatusBadge } from './components/HealthStatusBadge';
+import { LeaseUploader } from './components/LeaseUploader';
+import { LeaseAuditViewer } from './components/LeaseAuditViewer';
+import { LeaseAuditSummary } from './types';
 import { Scale, Database, Cpu, Lock, FileText, Camera, ShieldCheck, MailCheck, Check, Sparkles } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'audit' | 'vault' | 'demand' | 'billing' | 'system'>('audit');
   const [creditsRemaining] = useState<number>(1);
+  const [currentAudit, setCurrentAudit] = useState<LeaseAuditSummary | null>(null);
+
+  const scrollToUploader = () => {
+    setActiveTab('audit');
+    setTimeout(() => {
+      const uploaderEl = document.getElementById('lease-uploader-section');
+      if (uploaderEl) {
+        uploaderEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
+  };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -22,81 +36,96 @@ export const App: React.FC = () => {
 
         {activeTab === 'audit' && (
           <div>
-            <HeroSection onStartAudit={() => setActiveTab('audit')} />
+            {currentAudit ? (
+              <LeaseAuditViewer
+                audit={currentAudit}
+                onReset={() => setCurrentAudit(null)}
+                onNavigateToDemand={() => setActiveTab('demand')}
+              />
+            ) : (
+              <div>
+                <HeroSection onStartAudit={scrollToUploader} />
 
-            {/* Architecture Overview Section */}
-            <div id="architecture" className="glass-panel" style={{ padding: '38px', marginTop: '48px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}>
-                <div style={{
-                  padding: '12px',
-                  borderRadius: '12px',
-                  background: 'rgba(99, 102, 241, 0.2)',
-                  color: '#818cf8',
-                  boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)',
-                }}>
-                  <Cpu size={26} />
+                {/* Interactive Uploader Section */}
+                <div id="lease-uploader-section">
+                  <LeaseUploader onAuditCompleted={(audit) => setCurrentAudit(audit)} />
                 </div>
-                <div>
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Engineered for Heavy Legal Documents</h2>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem' }}>
-                    Unlike superficial AI wrappers, TenantShield parses 50+ page leases down into semantic clauses, 
-                    cross-references statutory tenant codes, and provides actionable remedies with zero hallucination.
-                  </p>
+
+                {/* Architecture Overview Section */}
+                <div id="architecture" className="glass-panel" style={{ padding: '38px', marginTop: '48px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}>
+                    <div style={{
+                      padding: '12px',
+                      borderRadius: '12px',
+                      background: 'rgba(99, 102, 241, 0.2)',
+                      color: '#818cf8',
+                      boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)',
+                    }}>
+                      <Cpu size={26} />
+                    </div>
+                    <div>
+                      <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Engineered for Heavy Legal Documents</h2>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem' }}>
+                        Unlike superficial AI wrappers, TenantShield parses 50+ page leases down into semantic clauses, 
+                        cross-references statutory tenant codes, and provides actionable remedies with zero hallucination.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                    gap: '20px',
+                    marginTop: '26px',
+                  }}>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#60a5fa', marginBottom: '12px' }}>
+                        <FileText size={20} />
+                        <span style={{ fontWeight: 700, fontSize: '1rem' }}>1. Stream Chunking Engine</span>
+                      </div>
+                      <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                        Page-level coordinate extraction with sliding-window clause boundary detection. Prevents context drift and token cutoff on 50+ page PDFs.
+                      </p>
+                    </div>
+
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#34d399', marginBottom: '12px' }}>
+                        <Scale size={20} />
+                        <span style={{ fontWeight: 700, fontSize: '1rem' }}>2. Statutory Legal Matrix</span>
+                      </div>
+                      <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                        Evaluates clauses against California Civil Code § 1950.5, NY HSTPA, Texas Property Code, and Indian Model Tenancy Act.
+                      </p>
+                    </div>
+
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b', marginBottom: '12px' }}>
+                        <Database size={20} />
+                        <span style={{ fontWeight: 700, fontSize: '1rem' }}>3. Polyglot Persistence</span>
+                      </div>
+                      <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                        PostgreSQL Neon enforces double-entry credit ledger & Stripe transactions; MongoDB stores raw clause ASTs and photo hashes.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '20px',
-                marginTop: '26px',
-              }}>
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '16px',
-                  padding: '24px',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#60a5fa', marginBottom: '12px' }}>
-                    <FileText size={20} />
-                    <span style={{ fontWeight: 700, fontSize: '1rem' }}>1. Stream Chunking Engine</span>
-                  </div>
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                    Page-level coordinate extraction with sliding-window clause boundary detection. Prevents context drift and token cutoff on 50+ page PDFs.
-                  </p>
-                </div>
-
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '16px',
-                  padding: '24px',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#34d399', marginBottom: '12px' }}>
-                    <Scale size={20} />
-                    <span style={{ fontWeight: 700, fontSize: '1rem' }}>2. Statutory Legal Matrix</span>
-                  </div>
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                    Evaluates clauses against California Civil Code § 1950.5, NY HSTPA, Texas Property Code, and Indian Model Tenancy Act.
-                  </p>
-                </div>
-
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '16px',
-                  padding: '24px',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b', marginBottom: '12px' }}>
-                    <Database size={20} />
-                    <span style={{ fontWeight: 700, fontSize: '1rem' }}>3. Polyglot Persistence</span>
-                  </div>
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                    PostgreSQL Neon enforces double-entry credit ledger & Stripe transactions; MongoDB stores raw clause ASTs and photo hashes.
-                  </p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         )}
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Sparkles, Scale, FileText, Lock } from 'lucide-react';
+import { Shield, Sparkles, Scale, FileText, Lock, Activity } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'audit' | 'vault' | 'demand' | 'billing' | 'system';
@@ -11,68 +11,86 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, credits
   return (
     <header style={{
       borderBottom: '1px solid var(--border-subtle)',
-      background: 'rgba(7, 9, 14, 0.85)',
+      background: 'rgba(5, 7, 14, 0.88)',
       backdropFilter: 'var(--glass-blur)',
+      WebkitBackdropFilter: 'var(--glass-blur)',
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      padding: '0 24px',
+      padding: '0 20px',
     }}>
       <div style={{
-        maxWidth: '1280px',
+        maxWidth: '1320px',
         margin: '0 auto',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: '72px',
+        height: '66px',
+        gap: '16px',
       }}>
-        {/* Logo and Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('audit')}>
+        {/* Brand Logo & Name (Crisp & Single Line) */}
+        <div 
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flexShrink: 0 }} 
+          onClick={() => setActiveTab('audit')}
+        >
           <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
             background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)',
+            boxShadow: '0 0 16px rgba(99, 102, 241, 0.45)',
           }}>
-            <Shield size={24} color="#ffffff" />
+            <Shield size={20} color="#ffffff" />
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff' }}>
-                Tenant<span style={{ color: '#818cf8' }}>Shield</span>
-              </span>
-              <span className="badge badge-info" style={{ fontSize: '0.65rem' }}>AI 2.0</span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', letterSpacing: '0.01em' }}>
-              Lease Defender & Deposit Clawback
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ 
+              fontSize: '1.2rem', 
+              fontWeight: 800, 
+              fontFamily: 'var(--font-display)', 
+              letterSpacing: '-0.02em', 
+              color: '#ffffff' 
+            }}>
+              Tenant<span style={{ color: '#818cf8' }}>Shield</span>
+            </span>
+            <span className="badge badge-info" style={{ fontSize: '0.62rem', padding: '2px 6px', fontWeight: 700 }}>
+              AI 2.0
+            </span>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Navigation Tabs (Sleek Segmented Pill Group) */}
+        <nav style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          background: 'rgba(255, 255, 255, 0.03)',
+          padding: '4px',
+          borderRadius: '12px',
+          border: '1px solid var(--border-subtle)',
+          overflowX: 'auto',
+        }}>
           <button
             onClick={() => setActiveTab('audit')}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
+              gap: '6px',
+              padding: '7px 13px',
               borderRadius: '8px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
-              border: 'none',
+              border: activeTab === 'audit' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid transparent',
               cursor: 'pointer',
-              background: activeTab === 'audit' ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-              color: activeTab === 'audit' ? '#a5b4fc' : 'var(--text-muted)',
+              background: activeTab === 'audit' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
+              color: activeTab === 'audit' ? '#ffffff' : 'var(--text-muted)',
               transition: 'var(--transition-smooth)',
+              whiteSpace: 'nowrap',
             }}
           >
-            <Scale size={16} />
+            <Scale size={15} color={activeTab === 'audit' ? '#818cf8' : 'currentColor'} />
             Lease Audit
           </button>
 
@@ -81,21 +99,30 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, credits
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
+              gap: '6px',
+              padding: '7px 13px',
               borderRadius: '8px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
-              border: 'none',
+              border: activeTab === 'vault' ? '1px solid rgba(168, 85, 247, 0.4)' : '1px solid transparent',
               cursor: 'pointer',
-              background: activeTab === 'vault' ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-              color: activeTab === 'vault' ? '#a5b4fc' : 'var(--text-muted)',
+              background: activeTab === 'vault' ? 'rgba(168, 85, 247, 0.2)' : 'transparent',
+              color: activeTab === 'vault' ? '#ffffff' : 'var(--text-muted)',
               transition: 'var(--transition-smooth)',
+              whiteSpace: 'nowrap',
             }}
           >
-            <Lock size={16} />
-            Evidence Vault
-            <span style={{ fontSize: '0.62rem', background: 'rgba(168, 85, 247, 0.2)', color: '#d8b4fe', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>Soon</span>
+            <Lock size={15} color={activeTab === 'vault' ? '#c084fc' : 'currentColor'} />
+            <span>Evidence Vault</span>
+            <span style={{
+              fontSize: '0.6rem',
+              background: 'rgba(168, 85, 247, 0.15)',
+              color: '#d8b4fe',
+              padding: '1px 5px',
+              borderRadius: '4px',
+              fontWeight: 700,
+              border: '1px solid rgba(168, 85, 247, 0.3)',
+            }}>Soon</span>
           </button>
 
           <button
@@ -103,21 +130,30 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, credits
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
+              gap: '6px',
+              padding: '7px 13px',
               borderRadius: '8px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
-              border: 'none',
+              border: activeTab === 'demand' ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid transparent',
               cursor: 'pointer',
-              background: activeTab === 'demand' ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-              color: activeTab === 'demand' ? '#a5b4fc' : 'var(--text-muted)',
+              background: activeTab === 'demand' ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+              color: activeTab === 'demand' ? '#ffffff' : 'var(--text-muted)',
               transition: 'var(--transition-smooth)',
+              whiteSpace: 'nowrap',
             }}
           >
-            <FileText size={16} />
-            Demand Letters
-            <span style={{ fontSize: '0.62rem', background: 'rgba(168, 85, 247, 0.2)', color: '#d8b4fe', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>Soon</span>
+            <FileText size={15} color={activeTab === 'demand' ? '#34d399' : 'currentColor'} />
+            <span>Demand Notices</span>
+            <span style={{
+              fontSize: '0.6rem',
+              background: 'rgba(168, 85, 247, 0.15)',
+              color: '#d8b4fe',
+              padding: '1px 5px',
+              borderRadius: '4px',
+              fontWeight: 700,
+              border: '1px solid rgba(168, 85, 247, 0.3)',
+            }}>Soon</span>
           </button>
 
           <button
@@ -125,19 +161,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, credits
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
+              gap: '6px',
+              padding: '7px 13px',
               borderRadius: '8px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
-              border: 'none',
+              border: activeTab === 'billing' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid transparent',
               cursor: 'pointer',
-              background: activeTab === 'billing' ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-              color: activeTab === 'billing' ? '#a5b4fc' : 'var(--text-muted)',
+              background: activeTab === 'billing' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
+              color: activeTab === 'billing' ? '#ffffff' : 'var(--text-muted)',
               transition: 'var(--transition-smooth)',
+              whiteSpace: 'nowrap',
             }}
           >
-            <Sparkles size={16} />
+            <Sparkles size={15} color={activeTab === 'billing' ? '#818cf8' : 'currentColor'} />
             Pricing
           </button>
 
@@ -146,46 +183,49 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, credits
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
+              gap: '6px',
+              padding: '7px 13px',
               borderRadius: '8px',
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
-              border: 'none',
+              border: activeTab === 'system' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid transparent',
               cursor: 'pointer',
-              background: activeTab === 'system' ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-              color: activeTab === 'system' ? '#a5b4fc' : 'var(--text-muted)',
+              background: activeTab === 'system' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
+              color: activeTab === 'system' ? '#ffffff' : 'var(--text-muted)',
               transition: 'var(--transition-smooth)',
+              whiteSpace: 'nowrap',
             }}
           >
+            <Activity size={15} color={activeTab === 'system' ? '#818cf8' : 'currentColor'} />
             System Status
           </button>
         </nav>
 
-        {/* Right Action: Free Credit counter & upgrade */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Right Section: Free Audit Credits & Upgrade CTA */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            background: 'rgba(255, 255, 255, 0.04)',
+            background: 'rgba(255, 255, 255, 0.035)',
             padding: '6px 12px',
-            borderRadius: '20px',
+            borderRadius: '10px',
             border: '1px solid var(--border-subtle)',
-            fontSize: '0.82rem',
+            fontSize: '0.8rem',
           }}>
-            <span style={{ color: 'var(--text-dim)' }}>Audits Left:</span>
-            <span style={{ fontWeight: 700, color: creditsRemaining > 0 ? '#34d399' : '#f87171' }}>
+            <span className="beacon-dot" style={{ width: '6px', height: '6px' }}></span>
+            <span style={{ color: 'var(--text-dim)', fontSize: '0.78rem' }}>Credits:</span>
+            <span style={{ fontWeight: 800, color: creditsRemaining > 0 ? '#34d399' : '#f87171' }}>
               {creditsRemaining} Free
             </span>
           </div>
 
           <button
             className="btn-primary"
-            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+            style={{ padding: '7px 14px', fontSize: '0.82rem', borderRadius: '10px' }}
             onClick={() => setActiveTab('billing')}
           >
-            <Sparkles size={14} />
+            <Sparkles size={13} />
             Upgrade Pro
           </button>
         </div>

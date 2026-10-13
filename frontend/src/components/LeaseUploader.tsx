@@ -16,9 +16,10 @@ import { LeaseAuditSummary } from '../types';
 
 interface LeaseUploaderProps {
   onAuditCompleted: (audit: LeaseAuditSummary) => void;
+  onUpgradeRequested?: () => void;
 }
 
-export const LeaseUploader: React.FC<LeaseUploaderProps> = ({ onAuditCompleted }) => {
+export const LeaseUploader: React.FC<LeaseUploaderProps> = ({ onAuditCompleted, onUpgradeRequested }) => {
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -71,12 +72,15 @@ export const LeaseUploader: React.FC<LeaseUploaderProps> = ({ onAuditCompleted }
     setSelectedFile(file);
   };
 
+  const [isQuotaExhausted, setIsQuotaExhausted] = useState<boolean>(false);
+
   // Simulates or handles real upload with smooth progress counter
   const executeUploadAndAudit = async () => {
     if (!selectedFile) return;
 
     setIsProcessing(true);
     setErrorMessage(null);
+    setIsQuotaExhausted(false);
     setProgressPercent(10);
 
     // Dynamic progress ticker
@@ -104,6 +108,10 @@ export const LeaseUploader: React.FC<LeaseUploaderProps> = ({ onAuditCompleted }
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
+        if (res.status === 402 || errJson.quotaExhausted) {
+          setIsQuotaExhausted(true);
+          throw new Error('Your free lease audit credit has been used. Upgrade to Pro or purchase a single audit credit to continue.');
+        }
         throw new Error(errJson.message || `Analysis failed with status ${res.status}`);
       }
 
@@ -461,18 +469,34 @@ export const LeaseUploader: React.FC<LeaseUploaderProps> = ({ onAuditCompleted }
       {errorMessage && (
         <div style={{
           marginTop: '20px',
-          padding: '12px 16px',
-          background: 'rgba(244, 63, 94, 0.1)',
-          border: '1px solid rgba(244, 63, 94, 0.3)',
-          borderRadius: '10px',
-          color: '#fda4af',
+          padding: '14px 18px',
+          background: isQuotaExhausted ? 'rgba(99, 102, 241, 0.12)' : 'rgba(244, 63, 94, 0.1)',
+          border: isQuotaExhausted ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid rgba(244, 63, 94, 0.3)',
+          borderRadius: '12px',
+          color: isQuotaExhausted ? '#c7d2fe' : '#fda4af',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
-          fontSize: '0.86rem',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          fontSize: '0.88rem',
         }}>
-          <ShieldAlert size={16} />
-          <span>{errorMessage}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {isQuotaExhausted ? <Sparkles size={18} color="#818cf8" /> : <ShieldAlert size={18} color="#f43f5e" />}
+            <span>{errorMessage}</span>
+          </div>
+
+          {isQuotaExhausted && onUpgradeRequested && (
+            <button
+              className="btn-primary"
+              style={{ padding: '6px 14px', fontSize: '0.82rem', borderRadius: '8px' }}
+              onClick={onUpgradeRequested}
+            >
+              <Zap size={14} />
+              Upgrade Pro ($4.99) or Single ($9)
+              <ArrowRight size={14} />
+            </button>
+          )}
         </div>
       )}
     </div>

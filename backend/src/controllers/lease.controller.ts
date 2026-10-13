@@ -1,8 +1,22 @@
 import { Request, Response } from 'express';
 import { LeaseAuditService } from '../services/leaseAudit.service.js';
+import { StripeBillingService } from '../services/billing/stripe.service.js';
 
 export async function analyzeLeaseHandler(req: Request, res: Response) {
   try {
+    const userId = req.body.userId || '00000000-0000-0000-0000-000000000001';
+
+    // Verify user entitlement quota
+    const quota = await StripeBillingService.getUserQuota(userId);
+    if (!quota.canAudit) {
+      return res.status(402).json({
+        success: false,
+        quotaExhausted: true,
+        message: 'Your free lease audit credit has been used. Upgrade to Pro or purchase a single report to analyze additional leases.',
+        data: { quota },
+      });
+    }
+
     let fileBuffer: Buffer | null = null;
     let fileName = 'Uploaded_Lease_Agreement.pdf';
 
@@ -30,14 +44,22 @@ export async function analyzeLeaseHandler(req: Request, res: Response) {
     const audit = await LeaseAuditService.processAndAuditLease({
       fileBuffer,
       fileName,
-      userId: req.body.userId || '00000000-0000-0000-0000-000000000001',
+      userId,
       jurisdiction,
     });
+
+    // Deduct audit quota upon successful generation
+    await StripeBillingService.deductAuditCredit(userId);
+
+    const updatedQuota = await StripeBillingService.getUserQuota(userId);
 
     res.status(200).json({
       success: true,
       message: 'Lease analysis completed successfully',
-      data: audit,
+      data: {
+        ...audit,
+        quota: updatedQuota,
+      },
     });
   } catch (err: any) {
     console.error('❌ Error during lease analysis:', err);

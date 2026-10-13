@@ -1,16 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { HealthStatusBadge } from './components/HealthStatusBadge';
 import { LeaseUploader } from './components/LeaseUploader';
 import { LeaseAuditViewer } from './components/LeaseAuditViewer';
+import { PricingSection } from './components/PricingSection';
 import { LeaseAuditSummary } from './types';
 import { Scale, Database, Cpu, Lock, FileText, Camera, ShieldCheck, MailCheck, Check, Sparkles } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'audit' | 'vault' | 'demand' | 'billing' | 'system'>('audit');
-  const [creditsRemaining] = useState<number>(1);
+  const [creditsRemaining, setCreditsRemaining] = useState<number>(1);
+  const [planTier, setPlanTier] = useState<string>('free');
+  const [paymentBanner, setPaymentBanner] = useState<string | null>(null);
   const [currentAudit, setCurrentAudit] = useState<LeaseAuditSummary | null>(null);
+
+  const fetchUserQuota = async () => {
+    try {
+      const res = await fetch('/api/billing/quota');
+      const json = await res.json();
+      if (json.success && json.data) {
+        setCreditsRemaining(json.data.freeReportsRemaining ?? 1);
+        setPlanTier(json.data.planTier || 'free');
+      }
+    } catch (err) {
+      console.warn('Quota fetch note:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserQuota();
+
+    if (window.location.hash.includes('payment-success')) {
+      setPaymentBanner('🎉 Payment Confirmed! Your TenantShield account upgrade has been applied.');
+      fetchUserQuota();
+      setTimeout(() => setPaymentBanner(null), 8000);
+    }
+  }, []);
 
   const scrollToUploader = () => {
     setActiveTab('audit');
@@ -31,6 +57,26 @@ export const App: React.FC = () => {
       />
 
       <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '0 24px 64px 24px' }}>
+        {/* Payment Confirmation Banner */}
+        {paymentBanner && (
+          <div style={{
+            background: 'rgba(16, 185, 129, 0.15)',
+            border: '1px solid rgba(16, 185, 129, 0.4)',
+            borderRadius: '14px',
+            padding: '16px 22px',
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            color: '#34d399',
+            fontWeight: 700,
+            animation: 'fadeIn 0.3s ease',
+          }}>
+            <ShieldCheck size={22} />
+            <span>{paymentBanner}</span>
+          </div>
+        )}
+
         {/* System Architecture Telemetry */}
         <HealthStatusBadge />
 
@@ -48,7 +94,13 @@ export const App: React.FC = () => {
 
                 {/* Interactive Uploader Section */}
                 <div id="lease-uploader-section">
-                  <LeaseUploader onAuditCompleted={(audit) => setCurrentAudit(audit)} />
+                  <LeaseUploader
+                    onAuditCompleted={(audit) => {
+                      setCurrentAudit(audit);
+                      fetchUserQuota();
+                    }}
+                    onUpgradeRequested={() => setActiveTab('billing')}
+                  />
                 </div>
 
                 {/* Architecture Overview Section */}
@@ -262,96 +314,12 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'billing' && (
-          <div className="glass-panel" style={{ padding: '42px 36px', marginTop: '24px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '38px' }}>
-              <div className="badge badge-info" style={{ marginBottom: '12px' }}>Next Founders Hackathon Model</div>
-              <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '10px' }}>Predictable Pricing for Tenants</h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-                Your first lease audit is 100% free with no credit card required. Pay-as-you-go or upgrade for complete tenancy protection.
-              </p>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '24px',
-              maxWidth: '920px',
-              margin: '0 auto',
-            }}>
-              {/* Free Tier */}
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '18px',
-                padding: '30px',
-                display: 'flex',
-                flexDirection: 'column',
-              }}>
-                <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '4px' }}>Free Audit</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '18px' }}>For first-time renters</div>
-                <div style={{ fontSize: '2.6rem', fontWeight: 800, marginBottom: '22px', fontFamily: 'var(--font-display)' }}>$0</div>
-                <ul style={{ listStyle: 'none', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '26px', flex: 1 }}>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> 1 Full Lease Audit (up to 40 pages)</li>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> Red-flag illegal clause detection</li>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> Overall Risk Score (0–100)</li>
-                </ul>
-                <button className="btn-secondary" style={{ width: '100%' }}>Included on Sign Up</button>
-              </div>
-
-              {/* Pay-Per-Report */}
-              <div style={{
-                background: 'rgba(99, 102, 241, 0.08)',
-                border: '1px solid rgba(99, 102, 241, 0.4)',
-                borderRadius: '18px',
-                padding: '30px',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'relative',
-                boxShadow: '0 10px 30px rgba(99, 102, 241, 0.2)',
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: '-12px',
-                  right: '20px',
-                }} className="badge badge-info">Popular</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '4px' }}>One-Off Audit</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '18px' }}>Single contract deep-dive</div>
-                <div style={{ fontSize: '2.6rem', fontWeight: 800, marginBottom: '22px', fontFamily: 'var(--font-display)' }}>
-                  $9 <span style={{ fontSize: '1rem', color: 'var(--text-dim)' }}>/ lease</span>
-                </div>
-                <ul style={{ listStyle: 'none', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '26px', flex: 1 }}>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> Unlimited pages per lease</li>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> Detailed statutory legal citations</li>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> Safe counter-clause generator</li>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> Exportable PDF audit report</li>
-                </ul>
-                <button className="btn-primary" style={{ width: '100%' }}>Purchase Audit via Stripe</button>
-              </div>
-
-              {/* Pro Membership */}
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '18px',
-                padding: '30px',
-                display: 'flex',
-                flexDirection: 'column',
-              }}>
-                <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '4px' }}>Tenant Shield Pro</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '18px' }}>Full tenancy protection</div>
-                <div style={{ fontSize: '2.6rem', fontWeight: 800, marginBottom: '22px', fontFamily: 'var(--font-display)' }}>
-                  $4.99 <span style={{ fontSize: '1rem', color: 'var(--text-dim)' }}>/ month</span>
-                </div>
-                <ul style={{ listStyle: 'none', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '26px', flex: 1 }}>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> Unlimited lease audits</li>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> Move-In SHA-256 Photo Vault</li>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> 1-Click Clawback Demand Letters</li>
-                  <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={16} color="#34d399" /> Direct attorney-ready exports</li>
-                </ul>
-                <button className="btn-secondary" style={{ width: '100%' }}>Subscribe with Stripe</button>
-              </div>
-            </div>
-          </div>
+          <PricingSection
+            currentPlanTier={planTier}
+            creditsRemaining={creditsRemaining}
+            onUpgradeSuccess={fetchUserQuota}
+            onNavigateToAudit={() => setActiveTab('audit')}
+          />
         )}
 
         {activeTab === 'system' && (

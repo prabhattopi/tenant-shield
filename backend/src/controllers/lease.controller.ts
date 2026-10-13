@@ -87,6 +87,20 @@ export async function getSampleLeaseHandler(req: Request, res: Response) {
   }
 }
 
+export async function downloadSampleLeaseHandler(req: Request, res: Response) {
+  try {
+    const { SAMPLE_PREDATORY_LEASE_TEXT } = await import('../services/leaseAudit.service.js');
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="California_Predatory_Lease_2026.txt"');
+    res.send(SAMPLE_PREDATORY_LEASE_TEXT);
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to download sample file',
+    });
+  }
+}
+
 export async function listUserAuditsHandler(req: Request, res: Response) {
   try {
     const userId = (req.query.userId as string) || '00000000-0000-0000-0000-000000000001';

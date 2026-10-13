@@ -4,6 +4,7 @@ import {
   analyzeLeaseHandler,
   getLeaseAuditHandler,
   getSampleLeaseHandler,
+  downloadSampleLeaseHandler,
   listUserAuditsHandler,
 } from '../controllers/lease.controller.js';
 
@@ -19,6 +20,7 @@ const upload = multer({
 
 router.post('/analyze', upload.single('leaseFile'), analyzeLeaseHandler);
 router.get('/sample', getSampleLeaseHandler);
+router.get('/download-sample', downloadSampleLeaseHandler);
 router.get('/:id', getLeaseAuditHandler);
 router.get('/', listUserAuditsHandler);
 

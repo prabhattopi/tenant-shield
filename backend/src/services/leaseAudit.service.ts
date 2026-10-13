@@ -8,6 +8,48 @@ import mongoose from 'mongoose';
 // In-memory resilient store for leases when Mongo is offline
 const inMemoryLeases: Map<string, any> = new Map();
 
+export const SAMPLE_PREDATORY_LEASE_TEXT = `RESIDENTIAL LEASE AGREEMENT (STANDARD FORM 2026)
+JURISDICTION: STATE OF CALIFORNIA, COUNTY OF ALAMEDA
+
+1. PARTIES AND PREMISES
+This Residential Lease Agreement ("Agreement") is made this 1st day of October, 2026, by and between Apex Property Management LLC ("Landlord"), and Tenant ("Tenant"), for the leased premises located at:
+Unit 4B, 742 Evergreen Terrace, Berkeley, CA 94704 ("Premises").
+
+2. TERM OF LEASE
+The initial term shall commence on November 1, 2026 and continue for twelve (12) calendar months, expiring October 31, 2027.
+
+3. MONTHLY RENT
+Tenant agrees to pay monthly rent in the sum of $2,400.00 USD, due on the first (1st) day of each calendar month without deduction or offset.
+
+4. SECURITY DEPOSIT AND NON-REFUNDABLE CHARGES
+Tenant deposits $2,400.00 with Landlord as a security deposit.
+SECTION 4.3: MANDATORY TURNOVER DEDUCTION
+Upon termination or expiration of this tenancy, Landlord shall automatically withhold and retain $450.00 from said security deposit as a mandatory, non-refundable administrative inspection and professional turnover cleaning fee, regardless of premises cleanliness upon vacating.
+
+5. LANDLORD RIGHT OF ENTRY AND ACCESS
+SECTION 11.1: IMMEDIATE UNANNOUNCED INSPECTION
+Landlord and Landlord's authorized maintenance contractors reserve the absolute right to enter the leased unit at any time without prior written notice to inspect the condition of the premises or exhibit the unit to prospective tenants or lenders.
+
+6. MAINTENANCE, HABITABILITY AND REPAIRS
+SECTION 14.2: TENANT REPAIR OBLIGATIONS
+Tenant agrees to maintain the interior dwelling and assumes full financial liability for all interior plumbing leaks, drain blockages, wall heater servicing, and roof leak damages exceeding $50.00 per occurrence, regardless of the age or cause of breakdown. Landlord shall not be responsible for alternative lodging during any utility or heating interruptions.
+
+7. LATE CHARGES AND LIQUIDATED DAMAGES
+SECTION 18.5: DAILY LATE PENALTIES
+If rent is not received by 11:59 PM on the 1st day of the month, Tenant shall pay a late charge of $50.00 plus a daily penalty of $25.00 for each additional day payment remains delinquent until paid in full.
+
+8. INDEMNIFICATION AND BLANKET WAIVER OF CLAIMS
+SECTION 22.1: EXCULPATORY WAIVER
+Tenant agrees to hold Landlord, Landlord's agents, and affiliates completely harmless and waives all claims, actions, or damages arising from personal injury, water damage, pipe bursts, or electrical fires occurring on the premises, even if caused in whole or in part by Landlord's active negligence.
+
+9. ENTIRE AGREEMENT
+This document represents the entire understanding between the parties. No oral agreements shall supersede this contract.
+
+IN WITNESS WHEREOF, the parties execute this Agreement:
+Landlord: Apex Property Management LLC
+Tenant: [Prospective Tenant]
+`;
+
 export interface ProcessLeaseInput {
   fileBuffer: Buffer;
   fileName: string;

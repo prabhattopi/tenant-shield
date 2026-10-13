@@ -114,15 +114,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, credits
           >
             <Lock size={15} color={activeTab === 'vault' ? '#c084fc' : 'currentColor'} />
             <span>Evidence Vault</span>
-            <span style={{
-              fontSize: '0.6rem',
-              background: 'rgba(168, 85, 247, 0.15)',
-              color: '#d8b4fe',
-              padding: '1px 5px',
-              borderRadius: '4px',
-              fontWeight: 700,
-              border: '1px solid rgba(168, 85, 247, 0.3)',
-            }}>Soon</span>
           </button>
 
           <button
@@ -145,15 +136,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, credits
           >
             <FileText size={15} color={activeTab === 'demand' ? '#34d399' : 'currentColor'} />
             <span>Demand Notices</span>
-            <span style={{
-              fontSize: '0.6rem',
-              background: 'rgba(168, 85, 247, 0.15)',
-              color: '#d8b4fe',
-              padding: '1px 5px',
-              borderRadius: '4px',
-              fontWeight: 700,
-              border: '1px solid rgba(168, 85, 247, 0.3)',
-            }}>Soon</span>
           </button>
 
           <button

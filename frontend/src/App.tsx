@@ -5,8 +5,10 @@ import { HealthStatusBadge } from './components/HealthStatusBadge';
 import { LeaseUploader } from './components/LeaseUploader';
 import { LeaseAuditViewer } from './components/LeaseAuditViewer';
 import { PricingSection } from './components/PricingSection';
+import { EvidenceVaultViewer } from './components/EvidenceVaultViewer';
+import { DemandNoticeGenerator } from './components/DemandNoticeGenerator';
 import { LeaseAuditSummary } from './types';
-import { Scale, Database, Cpu, Lock, FileText, Camera, ShieldCheck, MailCheck, Check, Sparkles } from 'lucide-react';
+import { Scale, Database, Cpu, FileText, ShieldCheck } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'audit' | 'vault' | 'demand' | 'billing' | 'system'>('audit');
@@ -182,135 +184,11 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'vault' && (
-          <div className="glass-panel" style={{ padding: '48px 36px', textAlign: 'center', marginTop: '24px' }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '20px',
-              background: 'rgba(168, 85, 247, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 20px auto',
-              boxShadow: '0 0 30px rgba(168, 85, 247, 0.3)',
-            }}>
-              <Lock size={32} color="#c084fc" />
-            </div>
-
-            <div style={{ marginBottom: '12px' }}>
-              <span className="badge badge-coming-soon">
-                <span className="beacon-dot-purple"></span> Coming Soon
-              </span>
-            </div>
-
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '12px', color: '#ffffff' }}>
-              Move-In / Move-Out Evidence Vault
-            </h2>
-            <p style={{ color: 'var(--text-muted)', maxWidth: '640px', margin: '0 auto 32px auto', fontSize: '0.98rem' }}>
-              Upload room inspection photos upon moving in. Each image is stamped with an immutable SHA-256 hash, 
-              EXIF verification, and ISO timestamp to defeat fraudulent landlord damage claims upon move-out.
-            </p>
-
-            {/* Feature Teasers */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: '18px',
-              maxWidth: '850px',
-              margin: '0 auto',
-              textAlign: 'left',
-            }}>
-              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '14px', border: '1px solid var(--border-subtle)' }}>
-                <Camera size={20} color="#c084fc" style={{ marginBottom: '8px' }} />
-                <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>Room Tagging & Defect Pinning</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '0.84rem', marginTop: '4px' }}>
-                  Tag walls, carpets, fixtures, and appliances with pre-existing defect notes.
-                </div>
-              </div>
-
-              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '14px', border: '1px solid var(--border-subtle)' }}>
-                <ShieldCheck size={20} color="#34d399" style={{ marginBottom: '8px' }} />
-                <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>Tamper-Proof SHA-256 Hashes</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '0.84rem', marginTop: '4px' }}>
-                  Cryptographic hashing guarantees images haven't been altered or backdated.
-                </div>
-              </div>
-
-              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '14px', border: '1px solid var(--border-subtle)' }}>
-                <FileText size={20} color="#38bdf8" style={{ marginBottom: '8px' }} />
-                <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>Certified Move-Out Certificate</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '0.84rem', marginTop: '4px' }}>
-                  Export court-ready condition audit certificates to refute deposit deductions.
-                </div>
-              </div>
-            </div>
-          </div>
+          <EvidenceVaultViewer />
         )}
 
         {activeTab === 'demand' && (
-          <div className="glass-panel" style={{ padding: '48px 36px', textAlign: 'center', marginTop: '24px' }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '20px',
-              background: 'rgba(16, 185, 129, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 20px auto',
-              boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)',
-            }}>
-              <MailCheck size={32} color="#34d399" />
-            </div>
-
-            <div style={{ marginBottom: '12px' }}>
-              <span className="badge badge-coming-soon">
-                <span className="beacon-dot-purple"></span> Coming Soon
-              </span>
-            </div>
-
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '12px', color: '#ffffff' }}>
-              1-Click Certified Clawback Demand Letters
-            </h2>
-            <p style={{ color: 'var(--text-muted)', maxWidth: '640px', margin: '0 auto 32px auto', fontSize: '0.98rem' }}>
-              Generate statutory demand letters citing mandatory deadlines and bad-faith penalty multipliers 
-              (e.g., 2x to 3x statutory damages) to compel immediate return of your security deposit.
-            </p>
-
-            {/* Feature Teasers */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: '18px',
-              maxWidth: '850px',
-              margin: '0 auto',
-              textAlign: 'left',
-            }}>
-              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '14px', border: '1px solid var(--border-subtle)' }}>
-                <Scale size={20} color="#34d399" style={{ marginBottom: '8px' }} />
-                <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>Statutory Code Citation</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '0.84rem', marginTop: '4px' }}>
-                  Auto-inserts relevant tenancy laws, notice periods, and statutory penalty sections.
-                </div>
-              </div>
-
-              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '14px', border: '1px solid var(--border-subtle)' }}>
-                <Check size={20} color="#818cf8" style={{ marginBottom: '8px' }} />
-                <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>Line-Item Dispute Breakdown</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '0.84rem', marginTop: '4px' }}>
-                  Disputes bogus charges (cleaning, paint, repainting) item-by-item with legal grounds.
-                </div>
-              </div>
-
-              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '20px', borderRadius: '14px', border: '1px solid var(--border-subtle)' }}>
-                <Sparkles size={20} color="#f59e0b" style={{ marginBottom: '8px' }} />
-                <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>Ready to Mail / Email</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '0.84rem', marginTop: '4px' }}>
-                  Formatted as formal attorney-grade demand notice ready to send via certified mail or PDF.
-                </div>
-              </div>
-            </div>
-          </div>
+          <DemandNoticeGenerator />
         )}
 
         {activeTab === 'billing' && (

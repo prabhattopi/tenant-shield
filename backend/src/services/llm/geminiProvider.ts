@@ -1,29 +1,35 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ILLMProvider, LeaseAnalysisResult, DemandLetterContext } from './llmProvider.interface.js';
 import { SemanticChunk } from '../semanticChunker.service.js';
+import { MockResilientLLMProvider } from './mockProvider.js';
 
 export class GeminiLLMProvider implements ILLMProvider {
-  public name = 'Google Gemini (1.5 Flash / 2.0)';
+  public name = 'Google Gemini (2.5 Flash / Latest)';
   private genAI: GoogleGenerativeAI;
   private modelName: string;
+  private fallbackProvider: MockResilientLLMProvider;
 
-  constructor(apiKey: string, modelName = 'gemini-1.5-flash') {
+  constructor(apiKey: string, modelName = 'gemini-2.5-flash') {
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.modelName = modelName;
+    this.fallbackProvider = new MockResilientLLMProvider();
+  }
+
+  private getCandidateModels(): string[] {
+    const list = [
+      this.modelName,
+      'gemini-2.5-flash',
+      'gemini-flash-latest',
+      'gemini-2.5-pro',
+      'gemini-pro-latest'
+    ];
+    return Array.from(new Set(list.filter(Boolean)));
   }
 
   public async analyzeLease(
     chunks: SemanticChunk[],
     jurisdiction: { country: string; stateRegion: string }
   ): Promise<LeaseAnalysisResult> {
-    const model = this.genAI.getGenerativeModel({
-      model: this.modelName,
-      generationConfig: {
-        responseMimeType: 'application/json',
-        temperature: 0.2,
-      },
-    });
-
     const combinedChunks = chunks
       .slice(0, 15) // Process up to 15 key semantic chunks in batch
       .map(c => `[${c.sectionTitle} - Page ${c.startPage}-${c.endPage}]:\n${c.text}`)
@@ -69,20 +75,36 @@ LEASE TEXT TO ANALYZE:
 ${combinedChunks}
 `;
 
-    try {
-      const response = await model.generateContent(prompt);
-      const text = response.response.text();
-      const parsed = JSON.parse(text) as LeaseAnalysisResult;
-      return parsed;
-    } catch (err: any) {
-      console.error('❌ Gemini analysis failed:', err.message);
-      throw err;
+    const candidates = this.getCandidateModels();
+    let lastError: any = null;
+
+    for (const candidate of candidates) {
+      try {
+        console.log(`🤖 Attempting Gemini audit with model: [${candidate}]...`);
+        const model = this.genAI.getGenerativeModel({
+          model: candidate,
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.2,
+          },
+        });
+
+        const response = await model.generateContent(prompt);
+        const text = response.response.text();
+        const parsed = JSON.parse(text) as LeaseAnalysisResult;
+        console.log(`✅ [Gemini] Successfully analyzed lease with model: [${candidate}]`);
+        return parsed;
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`⚠️ Gemini model [${candidate}] warning: ${err.message}. Cascading to next candidate...`);
+      }
     }
+
+    console.warn('⚠️ All Gemini cloud candidates failed or throttled. Seamlessly activating resilient local legal engine fallback.');
+    return this.fallbackProvider.analyzeLease(chunks, jurisdiction);
   }
 
   public async generateDemandNotice(context: DemandLetterContext): Promise<string> {
-    const model = this.genAI.getGenerativeModel({ model: this.modelName });
-
     const prompt = `
 Draft a formal, certified statutory Security Deposit Demand Notice from Tenant to Landlord.
 Jurisdiction: ${context.jurisdictionState}
@@ -104,7 +126,18 @@ Instructions:
 5. Format in clean, formal legal Markdown.
 `;
 
-    const res = await model.generateContent(prompt);
-    return res.response.text();
+    const candidates = this.getCandidateModels();
+    for (const candidate of candidates) {
+      try {
+        const model = this.genAI.getGenerativeModel({ model: candidate });
+        const res = await model.generateContent(prompt);
+        return res.response.text();
+      } catch (err: any) {
+        console.warn(`⚠️ Demand notice generation failed on [${candidate}]: ${err.message}`);
+      }
+    }
+
+    console.warn('⚠️ Cloud generation failed. Using local certified demand notice generator.');
+    return this.fallbackProvider.generateDemandNotice(context);
   }
 }

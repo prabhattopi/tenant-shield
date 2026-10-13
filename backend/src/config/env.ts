@@ -19,6 +19,7 @@ const envSchema = z.object({
   // LLM Engine
   LLM_PROVIDER: z.enum(['gemini', 'mock', 'ollama']).default('gemini'),
   GEMINI_API_KEY: z.string().optional(),
+  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
   OLLAMA_BASE_URL: z.string().default('http://localhost:11434'),
 
   // Stripe Billing

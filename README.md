@@ -25,27 +25,27 @@ Worse, upon moving out, dishonest landlords withhold an estimated **$3.2 Billion
 
 ```mermaid
 graph TD
-    A[Tenant / Client Browser] -->|Vite + React 18 + Vanilla CSS| B[API Gateway Express + TS]
+    A["Tenant Client Browser (React 18 + Vite)"] -->|"REST API / Multer Stream"| B["Express API Gateway (Node.js + TS)"]
     
-    subgraph "Ingestion & Chunker Pipeline"
-        B --> C[Heavy PDF Stream Parser]
-        C --> D[Semantic Clause Boundary Chunker 15% Overlap]
+    subgraph Ingestion["1. Ingestion & Chunker Pipeline"]
+        B --> C["Heavy PDF Stream Parser"]
+        C --> D["Semantic Clause Chunker (15% Overlap)"]
     end
 
-    subgraph "Dual Database Persistence"
-        B -->|Relational Quota & Financial Ledger| E[(PostgreSQL Neon)]
-        B -->|Unstructured Clause Lake & Evidence Vault| F[(MongoDB Atlas)]
+    subgraph Storage["2. Dual-Database Persistence"]
+        B -->|"Quota Ledger & Users"| E[("PostgreSQL (Neon)")]
+        B -->|"Clause AST & Photo Hashes"| F[("MongoDB Atlas")]
     end
 
-    subgraph "Pluggable Legal LLM Strategy"
-        D --> G[Gemini 2.5 Flash Engine]
-        G -.->|503 Demand Spike Fallback| H[Gemini Flash Latest / Pro]
-        H -.->|Cloud Outage Fallback| I[Resilient Local Legal Heuristics]
+    subgraph LLM["3. Pluggable Legal LLM Strategy"]
+        D --> G["Google Gemini 2.5 Flash Engine"]
+        G -.->|"Demand Spike (503) Fallback"| H["Gemini Flash Latest / Pro"]
+        H -.->|"Offline Fallback"| I["Resilient Local Legal Heuristics"]
     end
 
-    subgraph "Fintech Monetization"
-        B -->|PCI-DSS Level 1 Hosted Checkout| J[Stripe Developer API]
-        J -->|Webhooks / Quota Unlock| E
+    subgraph Fintech["4. Monetization & Security"]
+        B -->|"Hosted Checkout Session"| J["Stripe Developer API"]
+        J -->|"Webhooks & Entitlement"| E
     end
 ```
 

@@ -149,7 +149,7 @@ export const HealthStatusBadge: React.FC = () => {
               </span>
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-              {health.llm.geminiKeyConfigured ? 'Google Gemini 1.5/2.0 API Active' : 'Resilient Analyzer Active'}
+              {health.llm.geminiKeyConfigured ? 'Google Gemini 2.5 Flash Active' : 'Resilient Analyzer Active'}
             </div>
           </div>
 

@@ -21,6 +21,7 @@ export function getHealthStatus(req: Request, res: Response) {
     },
     llm: {
       activeProvider: env.LLM_PROVIDER,
+      activeModel: env.GEMINI_MODEL || 'gemini-2.5-flash',
       geminiKeyConfigured: Boolean(env.GEMINI_API_KEY && env.GEMINI_API_KEY.trim().length > 0),
     },
     billing: {

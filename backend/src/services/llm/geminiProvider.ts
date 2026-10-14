@@ -106,24 +106,25 @@ ${combinedChunks}
 
   public async generateDemandNotice(context: DemandLetterContext): Promise<string> {
     const prompt = `
-Draft a formal, certified statutory Security Deposit Demand Notice from Tenant to Landlord.
+You are drafting a formal statutory Security Deposit Demand Notice from Tenant to Landlord.
 Jurisdiction: ${context.jurisdictionState}
 Tenant: ${context.tenantName}
 Landlord: ${context.landlordName} (${context.landlordAddress})
 Rental Address: ${context.rentalAddress}
-Lease End Date: ${context.leaseEndDate}
+Move-Out / Tenancy Termination Date: ${context.leaseEndDate}
 Total Deposit Paid: $${context.totalDepositPaid}
 Unlawfully Withheld: $${context.unlawfullyWithheldAmount}
 
 Disputed Deductions:
 ${context.disputedDeductions.map(d => `- ${d.item}: $${d.amount} (Reason: ${d.reason})`).join('\n')}
 
-Instructions:
-1. Cite statutory tenancy codes for ${context.jurisdictionState} (e.g., California Civil Code § 1950.5 or relevant state code).
-2. Note the statutory deadline for itemized statements and deposit return (e.g., 21 days).
-3. Warn of bad-faith retention statutory penalty damages (up to twice the amount of the security deposit).
-4. Demand immediate return within 10 business days before filing in Small Claims Court.
-5. Format in clean, formal legal Markdown.
+INSTRUCTIONS:
+1. Output ONLY the final formal demand notice letter itself. Do NOT include any conversational preamble, apologies, or meta-notes such as "[IMPORTANT NOTE...]".
+2. Assume that the tenancy has legally ended, tenant has surrendered possession, and the statutory accounting deadline has elapsed.
+3. Citing relevant tenancy codes for ${context.jurisdictionState} (e.g., California Civil Code § 1950.5(g) and § 1950.5(m)).
+4. Compute and cite the bad-faith retention statutory penalty damages (up to 2x the withheld amount under Cal. Civ. Code § 1950.5(l)) alongside the actual damages.
+5. Demand immediate return within 10 business days before filing an action in Small Claims Court.
+6. Format in clean, formal legal Markdown.
 `;
 
     const candidates = this.getCandidateModels();

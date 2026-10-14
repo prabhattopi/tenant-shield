@@ -8,7 +8,9 @@ import {
   Download, 
   Plus, 
   Trash2, 
-  MailCheck 
+  MailCheck,
+  FileText,
+  Code
 } from 'lucide-react';
 
 interface DisputedItem {
@@ -42,6 +44,7 @@ export const DemandNoticeGenerator: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [generatedLetter, setGeneratedLetter] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'formatted' | 'raw'>('formatted');
 
   // Total disputed calculation
   const totalWithheld = disputedDeductions.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
@@ -139,6 +142,246 @@ export const DemandNoticeGenerator: React.FC = () => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  // Helper to parse bolding, badges, dollar amounts, and statutory citations
+  const parseInlineFormatting = (text: string) => {
+    // Regex splits by markdown bolding **text**
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        const inner = part.slice(2, -2).trim();
+        // Highlight monetary values
+        if (inner.includes('$')) {
+          return (
+            <span
+              key={idx}
+              style={{
+                background: 'rgba(52, 211, 153, 0.15)',
+                color: '#34d399',
+                fontWeight: 800,
+                padding: '1px 6px',
+                borderRadius: '4px',
+                border: '1px solid rgba(52, 211, 153, 0.3)',
+              }}
+            >
+              {inner}
+            </span>
+          );
+        }
+        // Highlight statutory codes
+        if (inner.includes('§') || inner.includes('Civil Code') || inner.includes('Statutory') || inner.includes('HSTPA')) {
+          return (
+            <span
+              key={idx}
+              style={{
+                background: 'rgba(129, 140, 248, 0.15)',
+                color: '#818cf8',
+                fontWeight: 800,
+                padding: '1px 6px',
+                borderRadius: '4px',
+                border: '1px solid rgba(129, 140, 248, 0.3)',
+              }}
+            >
+              {inner}
+            </span>
+          );
+        }
+        return <strong key={idx} style={{ color: '#ffffff', fontWeight: 700 }}>{inner}</strong>;
+      }
+
+      // Format backticks `code`
+      const backtickParts = part.split(/(`.*?`)/g);
+      return backtickParts.map((sub, sIdx) => {
+        if (sub.startsWith('`') && sub.endsWith('`')) {
+          return (
+            <code
+              key={`${idx}-${sIdx}`}
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                color: '#f8fafc',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '0.88em',
+              }}
+            >
+              {sub.slice(1, -1)}
+            </code>
+          );
+        }
+        return sub;
+      });
+    });
+  };
+
+  // Rich legal notice document renderer (No raw markdown clutter)
+  const renderFormattedNotice = (markdown: string) => {
+    // 1. Strip out any AI meta-commentary notes like **[IMPORTANT NOTE...]**
+    let sanitized = markdown
+      .replace(/\*\*\[IMPORTANT NOTE[\s\S]*?\*\*(\n\n|---|\n)/gi, '')
+      .replace(/\[IMPORTANT NOTE[\s\S]*?\](\n\n|---|\n)/gi, '')
+      .trim();
+
+    // 2. Split into semantic paragraph/block chunks
+    const blocks = sanitized.split(/\n\n+/);
+
+    return (
+      <div style={{ color: '#e2e8f0', lineHeight: 1.8, fontSize: '0.94rem' }}>
+        {blocks.map((block, bIdx) => {
+          const trimmed = block.trim();
+          if (!trimmed) return null;
+
+          // Horizontal rule
+          if (trimmed === '---' || trimmed === '***') {
+            return (
+              <hr
+                key={bIdx}
+                style={{
+                  border: 'none',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+                  margin: '22px 0',
+                }}
+              />
+            );
+          }
+
+          // Main Header #
+          if (trimmed.startsWith('# ')) {
+            const heading = trimmed.replace(/^#\s*/, '').replace(/\*\*/g, '');
+            return (
+              <h2
+                key={bIdx}
+                style={{
+                  fontSize: '1.28rem',
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  marginBottom: '14px',
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '-0.01em',
+                  borderBottom: '2px solid rgba(99, 102, 241, 0.4)',
+                  paddingBottom: '10px',
+                }}
+              >
+                {heading}
+              </h2>
+            );
+          }
+
+          // Subheader ## or ###
+          if (trimmed.startsWith('## ') || trimmed.startsWith('### ')) {
+            const heading = trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, '');
+            return (
+              <h3
+                key={bIdx}
+                style={{
+                  fontSize: '1.08rem',
+                  fontWeight: 700,
+                  color: '#a5b4fc',
+                  marginTop: '22px',
+                  marginBottom: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span style={{ width: '4px', height: '16px', background: '#6366f1', borderRadius: '2px' }} />
+                {heading}
+              </h3>
+            );
+          }
+
+          // Numbered list items (e.g. 1. Disputed Deduction...)
+          if (trimmed.match(/^\d+\.\s+/)) {
+            const items = trimmed.split(/\n(?=\d+\.\s+)/);
+            return (
+              <div key={bIdx} style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '14px 0' }}>
+                {items.map((itemStr, iIdx) => {
+                  const cleaned = itemStr.replace(/^\d+\.\s+/, '');
+                  return (
+                    <div
+                      key={iIdx}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.025)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        padding: '14px 16px',
+                        display: 'flex',
+                        gap: '12px',
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          background: 'rgba(99, 102, 241, 0.2)',
+                          color: '#818cf8',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '0.8rem',
+                          flexShrink: 0,
+                          marginTop: '2px',
+                        }}
+                      >
+                        {iIdx + 1}
+                      </div>
+                      <div style={{ flex: 1, lineHeight: 1.65 }}>
+                        {parseInlineFormatting(cleaned)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          }
+
+          // Bullet points
+          if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+            const bulletItems = trimmed.split(/\n[-*]\s+/).filter(Boolean);
+            return (
+              <ul
+                key={bIdx}
+                style={{
+                  listStyle: 'none',
+                  paddingLeft: 0,
+                  margin: '12px 0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                }}
+              >
+                {bulletItems.map((bItem, idx) => (
+                  <li
+                    key={idx}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    <span style={{ color: '#34d399', fontWeight: 800, marginTop: '2px' }}>•</span>
+                    <div>{parseInlineFormatting(bItem.replace(/^[-*]\s+/, ''))}</div>
+                  </li>
+                ))}
+              </ul>
+            );
+          }
+
+          // Regular paragraph
+          return (
+            <p key={bIdx} style={{ marginBottom: '14px' }}>
+              {parseInlineFormatting(trimmed)}
+            </p>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -470,12 +713,64 @@ export const DemandNoticeGenerator: React.FC = () => {
         {/* Right Column: Letter Preview */}
         {generatedLetter && (
           <div className="glass-panel" style={{ padding: '32px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399' }} />
                 <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ffffff' }}>Attorney-Grade Notice Synthesized</span>
               </div>
 
+              {/* View Switcher: Styled Legal Document vs Raw Markdown */}
+              <div style={{
+                display: 'flex',
+                background: 'rgba(255, 255, 255, 0.05)',
+                padding: '3px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-subtle)',
+                gap: '2px',
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('formatted')}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: viewMode === 'formatted' ? 'rgba(99, 102, 241, 0.3)' : 'transparent',
+                    color: viewMode === 'formatted' ? '#ffffff' : 'var(--text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  <FileText size={13} color={viewMode === 'formatted' ? '#818cf8' : 'currentColor'} />
+                  Styled View
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('raw')}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: viewMode === 'raw' ? 'rgba(99, 102, 241, 0.3)' : 'transparent',
+                    color: viewMode === 'raw' ? '#ffffff' : 'var(--text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  <Code size={13} color={viewMode === 'raw' ? '#818cf8' : 'currentColor'} />
+                  Raw Markdown
+                </button>
+              </div>
+
+              {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   className="btn-secondary"
@@ -502,22 +797,26 @@ export const DemandNoticeGenerator: React.FC = () => {
               </div>
             </div>
 
-            {/* Letter Markdown Paper Canvas */}
+            {/* Document Canvas */}
             <div style={{
               background: 'rgba(5, 7, 14, 0.95)',
               border: '1px solid var(--border-subtle)',
-              borderRadius: '14px',
-              padding: '24px',
-              fontFamily: 'Georgia, serif',
+              borderRadius: '16px',
+              padding: '28px 32px',
+              fontFamily: viewMode === 'formatted' ? 'var(--font-sans), sans-serif' : 'monospace',
               fontSize: '0.92rem',
               lineHeight: 1.7,
               color: '#e2e8f0',
               overflowY: 'auto',
               maxHeight: '620px',
-              whiteSpace: 'pre-wrap',
-              boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.5)',
+              whiteSpace: viewMode === 'raw' ? 'pre-wrap' : 'normal',
+              boxShadow: 'inset 0 2px 14px rgba(0, 0, 0, 0.6)',
             }}>
-              {generatedLetter}
+              {viewMode === 'formatted' ? (
+                renderFormattedNotice(generatedLetter)
+              ) : (
+                generatedLetter
+              )}
             </div>
           </div>
         )}
